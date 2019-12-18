@@ -14,6 +14,12 @@ typedef struct{
 } coordonnees;
 
 typedef struct{
+  int id;
+  char mot[MAX_CHAR_SIZE];
+  char reponse[MAX_CHAR_SIZE];
+} motcles;
+
+typedef struct{
   coordonnees c;
   char obj[MAX_CHAR_SIZE];
   char corps[MAX_CHAR_SIZE];
@@ -33,8 +39,15 @@ void listerCoordonnees();
 void rechercherCoordonnees();
 void lancerRechercherCoordonnees(int);
 void supprimerCoordonnee();
+void saisirMotCle();
+void listerMotCle();
+void rechercherMotsCle();
+void supprimerMotCle();
 
-int getLastIdCoord();
+
+int getLastId(char*);
+void removeNl(char*);
+bool checkIfDigit(char*);
 
 int main(){
   char mdpAdmin[MAX_CHAR_SIZE] = "n";
@@ -47,18 +60,30 @@ int main(){
 void afficherMenu(char *mdp)
 {
   system("clear");
-  int choix;
+  char choix[MAX_CHAR_SIZE] = "";
   char *tmp_ptr_mdp = mdp;
   do
   {
+
+    if(checkIfDigit(choix) == false)
+    {
+      system("clear");
+      printf("\nVous devez uniquement rentrer des chiffres entre 1 et 3 pour effectuer votre choix.\n");
+    }
+
      printf("\nBienvenu dans le repondeur mail!\n\n");
      printf("1) Envoyer un mail.\n");
      printf("2) Passer à l'interface aministrateur.\n");
      printf("3) Fermer l'application.\n\n");
      printf("Veuillez choisir une option parmis celle proposée dans le menu ci-dessus : ");
-     scanf(" %d",&choix);
+     scanf("%s", choix);
 
-     switch (choix)
+     if(checkIfDigit(choix) == false)
+     {
+       continue;
+     }
+
+     switch (atoi(choix))
      {
          case 1: envoyerMail();
               break;
@@ -70,7 +95,7 @@ void afficherMenu(char *mdp)
          default: system("clear");
              break;
      }
-  } while (choix != 3);
+  } while (atoi(choix) != 3);
 }
 
 void envoyerMail()
@@ -80,7 +105,7 @@ void envoyerMail()
 
 void loginAdmin(char *mdp)
 {
-  char inputMdp[MAX_CHAR_SIZE];
+  char inputMdp[MAX_CHAR_SIZE] = "";
   char choix;
   char *tmp_ptr_mdp = mdp;
   do
@@ -117,10 +142,17 @@ void loginAdmin(char *mdp)
 void afficherMenuAdmin(char *mdp)
 {
     system("clear");
-    int choix;
+    char choix[MAX_CHAR_SIZE] = "";
     char *tmp_ptr_mdp = mdp;
     do
     {
+
+      if(checkIfDigit(choix) == false)
+      {
+        system("clear");
+        printf("\nVous devez uniquement rentrer des chiffres entre 1 et 9 pour effectuer votre choix.\n");
+      }
+
        printf("\nBienvenu dans le repondeur mail (Menu Administrateur)!\n\n");
        printf("1) Saisir nouvelles coordonnées.\n");
        printf("2) Lister les coordonnées.\n");
@@ -132,9 +164,14 @@ void afficherMenuAdmin(char *mdp)
        printf("8) Supprimer un mot clé et sa réponse associée.\n");
        printf("9) Se deconnecter.\n\n");
        printf("Veuillez choisir une option parmis celle proposée dans le menu ci-dessus : ");
-       scanf(" %d",&choix);
+       scanf(" %s",choix);
 
-       switch (choix)
+       if(checkIfDigit(choix) == false)
+       {
+         continue;
+       }
+
+       switch (atoi(choix))
        {
            case 1: saisirCoordonnes(); afficherMenuAdmin(tmp_ptr_mdp);
                 break;
@@ -144,46 +181,77 @@ void afficherMenuAdmin(char *mdp)
                break;
            case 4: supprimerCoordonnee(); afficherMenuAdmin(tmp_ptr_mdp);
                break;
-           case 5: printf("5");
+           case 5: saisirMotCle(); afficherMenuAdmin(tmp_ptr_mdp);
                 break;
-           case 6: printf("6");
+           case 6: listerMotCle(); afficherMenuAdmin(tmp_ptr_mdp);
                 break;
-           case 7: printf("7");
+           case 7: rechercherMotsCle(); afficherMenuAdmin(tmp_ptr_mdp);
                break;
-           case 8: printf("8");
+           case 8: supprimerMotCle(); afficherMenuAdmin(tmp_ptr_mdp);
                break;
            case 9: system("clear"); afficherMenu(tmp_ptr_mdp);
                break;
            default: system("clear");
                break;
        }
-    } while (choix != 9);
+    } while (atoi(choix) != 9);
 }
 
-int getLastIdCoord()
+int getLastId(char *fichier)
 {
   int lastId = 0;
   FILE *sourceBdd;
-  sourceBdd = fopen("coordonnees.dat", "r");
+  char *file_path = fichier;
+  sourceBdd = fopen(file_path, "r");
   if (sourceBdd == NULL)
   {
-    fprintf(stderr, "\nImpossible ouvrir la base de données!\n");
-    exit(0);
+    return lastId + 1;
   }
 
-  coordonnees coord_temp;
-
-  while(fread(&coord_temp, sizeof(coordonnees), 1, sourceBdd))
+  if (strcmp("coordonnees.dat", file_path) == 0)
   {
-    lastId = coord_temp.id;
+    coordonnees coord_temp;
+
+    while(fread(&coord_temp, sizeof(coordonnees), 1, sourceBdd))
+    {
+      lastId = coord_temp.id;
+    }
+  }
+  else
+  {
+    motcles motCle;
+
+    while(fread(&motCle, sizeof(motcles), 1, sourceBdd))
+    {
+      lastId = motCle.id;
+    }
   }
 
   return lastId + 1;
 }
 
+void removeNl(char *text)
+{
+  size_t len = strlen(text);
+  if (len > 0 && text[len - 1] == '\n')
+    text[len - 1] = '\0';
+}
+
+bool checkIfDigit(char *input)
+{
+  bool isDigit = true;
+  for (int i=0; i <strlen(input); i++) {
+    if (!((int)input[i] >= 47 && (int)input[i] <= 57))
+    {
+      isDigit = false;
+    }
+  }
+  return isDigit;
+}
+
 void saisirCoordonnes()
 {
-  int last_id = getLastIdCoord();
+  int last_id = getLastId("coordonnees.dat");
   FILE *sourceBdd;
   sourceBdd = fopen("coordonnees.dat", "a");
   if (sourceBdd == NULL)
@@ -205,13 +273,17 @@ void saisirCoordonnes()
     coord_temp.id = last_id;
 
     printf("\nVeuillez saisir le prénom : ");
-    scanf("%s", coord_temp.prenom);
+    getchar();
+    fgets(coord_temp.prenom, sizeof(coord_temp.prenom), stdin);
+    removeNl(coord_temp.prenom);
 
     printf("\nVeuillez saisir le nom : ");
-    scanf("%s", coord_temp.nom);
+    fgets(coord_temp.nom, sizeof(coord_temp.nom), stdin);
+    removeNl(coord_temp.nom);
 
     printf("\nVeuillez saisir l'adresse : ");
-    scanf("%s", coord_temp.adresse);
+    fgets(coord_temp.adresse, sizeof(coord_temp.adresse), stdin);
+    removeNl(coord_temp.adresse);
 
     printf("\nVeuillez saisir l'importance du client (0 ou 1) : ");
     scanf("%d", &(coord_temp.importance));
@@ -274,7 +346,7 @@ void listerCoordonnees()
 void rechercherCoordonnees()
 {
   system("clear");
-  int choix;
+  char choix[MAX_CHAR_SIZE] = "";
   bool exit = false;
   do
   {
@@ -284,15 +356,26 @@ void rechercherCoordonnees()
       break;
     }
 
-     printf("1) Rechercher par nom.\n");
+    if(checkIfDigit(choix) == false)
+    {
+      system("clear");
+      printf("\nVous devez uniquement rentrer des chiffres entre 1 et 5 pour effectuer votre choix.\n");
+    }
+
+     printf("\n1) Rechercher par nom.\n");
      printf("2) Recherche par prenom.\n");
      printf("3) Rechercher par adresse mail.\n");
      printf("4) Rechercher par priorité.\n");
      printf("5) Returner au menu principal.\n\n");
-     printf("Veuillez choisir u parametre de recherche parmis ceux proposés ci-dessus : ");
-     scanf(" %d",&choix);
+     printf("Veuillez choisir un parametre de recherche parmis ceux proposés ci-dessus : ");
+     scanf(" %s", choix);
 
-     switch (choix)
+     if(checkIfDigit(choix) == false)
+     {
+       continue;
+     }
+
+     switch (atoi(choix))
      {
          case 1: lancerRechercherCoordonnees(1); system("clear");
               break;
@@ -307,13 +390,13 @@ void rechercherCoordonnees()
          default: system("clear");
              break;
      }
-  } while (choix != 5);
+  } while (atoi(choix) != 5);
 }
 
 void lancerRechercherCoordonnees(int type)
 {
   system("clear");
-  char nom[MAX_CHAR_SIZE];
+  char query[MAX_CHAR_SIZE] = "";
   char choix;
   int compteur = 0;
   FILE *sourceBdd;
@@ -328,33 +411,39 @@ void lancerRechercherCoordonnees(int type)
 
   if (type == 1)
   {
-    printf("Veuillez rentrer le nom : ");
-    scanf("%s", nom);
+    printf("\nVeuillez rentrer le nom : ");
+    getchar();
+    fgets(query, sizeof(query), stdin);
+    removeNl(query);
   }
   else if (type == 2)
   {
-    printf("Veuillez rentrer le prenom : ");
-    scanf("%s", nom);
+    printf("\nVeuillez rentrer le prenom : ");
+    getchar();
+    fgets(query, sizeof(query), stdin);
+    removeNl(query);
   }
   else if (type == 3)
   {
-    printf("Veuillez rentrer l'adresse : ");
-    scanf("%s", nom);
+    printf("\nVeuillez rentrer l'adresse : ");
+    getchar();
+    fgets(query, sizeof(query), stdin);
+    removeNl(query);
   }
   else
   {
     do
     {
-      printf("Veuillez rentrer le niveau d'importance (1 ou 0) : ");
-      scanf("%s", nom);
-    } while (strcmp(nom, "1") != 0 && strcmp(nom, "0") != 0);
+      printf("\nVeuillez rentrer le niveau d'importance (1 ou 0) : ");
+      scanf("%s", query);
+    } while (strcmp(query, "1") != 0 && strcmp(query, "0") != 0);
   }
 
   while(fread(&coord_temp, sizeof(coordonnees), 1, sourceBdd))
   {
     if (type == 1)
     {
-      if (strcmp(nom, coord_temp.nom) == 0)
+      if (strcmp(query, coord_temp.nom) == 0)
       {
         printf("\nPrénom : %s \nNom : %s \nAdresse mail: %s \nPriorite : %d\n", coord_temp.prenom, coord_temp.nom, coord_temp.adresse, coord_temp.importance);
         printf("\n---------------------\n");
@@ -363,7 +452,7 @@ void lancerRechercherCoordonnees(int type)
     }
     else if (type == 2)
     {
-      if (strcmp(nom, coord_temp.prenom) == 0)
+      if (strcmp(query, coord_temp.prenom) == 0)
       {
         printf("\nPrénom : %s \nNom : %s \nAdresse mail: %s \nPriorite : %d\n", coord_temp.prenom, coord_temp.nom, coord_temp.adresse, coord_temp.importance);
         printf("\n---------------------\n");
@@ -372,7 +461,7 @@ void lancerRechercherCoordonnees(int type)
     }
     else if (type == 3)
     {
-      if (strcmp(nom, coord_temp.adresse) == 0)
+      if (strcmp(query, coord_temp.adresse) == 0)
       {
         printf("\nPrénom : %s \nNom : %s \nAdresse mail: %s \nPriorite : %d\n", coord_temp.prenom, coord_temp.nom, coord_temp.adresse, coord_temp.importance);
         printf("\n---------------------\n");
@@ -381,7 +470,7 @@ void lancerRechercherCoordonnees(int type)
     }
     else
     {
-      if (atoi(nom) == coord_temp.importance)
+      if (atoi(query) == coord_temp.importance)
       {
         printf("\nPrénom : %s \nNom : %s \nAdresse mail: %s \nPriorite : %d\n", coord_temp.prenom, coord_temp.nom, coord_temp.adresse, coord_temp.importance);
         printf("\n---------------------\n");
@@ -412,10 +501,11 @@ void lancerRechercherCoordonnees(int type)
   } while (choix != 'e');
 }
 
+
 void supprimerCoordonnee()
 {
   system("clear");
-  int id;
+  char id[MAX_CHAR_SIZE] = "";
   bool found = false;
   char choix;
 
@@ -439,12 +529,22 @@ void supprimerCoordonnee()
         break;
       }
 
+      if(checkIfDigit(id) == false)
+      {
+        printf("\nL'id que vous avez rentré n'est pas valide! Un id est compose uniquement de chiffres.\n");
+      }
+
       printf("\nVeuillez rentrer l'id de la coordonnée à supprimer : ");
-      scanf(" %d", &id);
+      scanf(" %s", id);
+
+      if(checkIfDigit(id) == false)
+      {
+        continue;
+      }
 
       while(fread(&coord_temp, sizeof(coordonnees), 1, sourceBdd))
       {
-        if(id == coord_temp.id)
+        if(atoi(id) == coord_temp.id)
         {
           found = true;
         }
@@ -457,7 +557,7 @@ void supprimerCoordonnee()
       {
         while(fread(&coord_temp, sizeof(coordonnees), 1, sourceBdd))
         {
-          if(id != coord_temp.id)
+          if(atoi(id) != coord_temp.id)
           {
             fwrite(&coord_temp, sizeof(coordonnees), 1, tmp_sourceBdd);
           }
@@ -470,6 +570,230 @@ void supprimerCoordonnee()
         do
         {
           printf("\nSupprimée avec succès! Voulez-vous supprimer une autre coordonnee? (o/n) ");
+          scanf(" %c", &choix);
+        } while (choix != 'o' && choix != 'n');
+      }
+      else
+      {
+        printf("\nL'id que vous avez rentré n'hexiste pas dans la base de donées des coordonnées!");
+
+        do
+        {
+          printf("\nVoulez-vous réessayer avec un autre id? (o/n) ");
+          scanf(" %c", &choix);
+        } while (choix != 'o' && choix != 'n');
+      }
+    } while(choix != 'n');
+  }
+}
+
+void saisirMotCle()
+{
+  int last_id = getLastId("motcles.dat");
+  FILE *sourceBdd;
+  sourceBdd = fopen("motcles.dat", "a");
+  if (sourceBdd == NULL)
+  {
+      fprintf(stderr, "\nImpossible ouvrir la base de données!\n");
+      exit(1);
+  }
+  char choix;
+  do
+  {
+    system("clear");
+    if (choix == 'n')
+    {
+      break;
+    }
+
+    motcles motCle;
+
+    motCle.id = last_id;
+
+    printf("\nVeuillez saisir le mot clé : ");
+    getchar();
+    fgets(motCle.mot, sizeof(motCle.mot), stdin);
+    removeNl(motCle.mot);
+
+    printf("\nVeuillez saisir la reponse : ");
+    fgets(motCle.reponse, sizeof(motCle.reponse), stdin);
+    removeNl(motCle.reponse);
+
+    fwrite (&motCle, sizeof(motcles), 1, sourceBdd);
+
+    do
+    {
+      printf("\nVoulez-vous ajouter un nouveau mot clé? (o/n) ");
+      scanf(" %c", &choix);
+    } while (choix != 'o' && choix != 'n');
+
+    if (choix == 'o')
+    {
+      last_id++;
+    }
+
+  } while (choix != 'n');
+  fclose(sourceBdd);
+}
+
+void listerMotCle()
+{
+  system("clear");
+  int compteur = 0;
+  char choix;
+  FILE *sourceBdd;
+  sourceBdd = fopen("motcles.dat", "r");
+  if (sourceBdd == NULL)
+  {
+    fprintf(stderr, "\nImpossible ouvrir la base de données!\n");
+    exit(0);
+  }
+
+  motcles motCle;
+
+  printf("\n---------------------\n");
+  printf("Mots clé : ");
+  printf("\n---------------------\n");
+
+  while(fread(&motCle, sizeof(motCle), 1, sourceBdd))
+  {
+    printf("\nId : %d \nMot clé : %s \nReponse : %s \n", motCle.id, motCle.mot, motCle.reponse);
+    printf("\n---------------------\n");
+    compteur++;
+  }
+
+  printf("Mots clé trouvés en total : %d.", compteur);
+  printf("\n---------------------\n\n");
+
+  fclose(sourceBdd);
+
+  printf("Cliquer sur la touche 'e' pour revenir au menu principal. ");
+  do
+  {
+    scanf(" %c", &choix);
+  } while (choix != 'e');
+}
+
+void rechercherMotsCle()
+{
+  system("clear");
+  char query[MAX_CHAR_SIZE] = "";
+  char choix;
+  int compteur = 0;
+  FILE *sourceBdd;
+  sourceBdd = fopen("motcles.dat", "r");
+  if (sourceBdd == NULL)
+  {
+    fprintf(stderr, "\nImpossible ouvrir la base de données!\n");
+    exit(0);
+  }
+
+  motcles motCle;
+
+  printf("\nVeuillez rentrer le mot clé ou reponse à rechercher : ");
+  getchar();
+  fgets(query, sizeof(query), stdin);
+  removeNl(query);
+
+  while(fread(&motCle, sizeof(motcles), 1, sourceBdd))
+  {
+      if (strcmp(query, motCle.mot) == 0 || strcmp(query, motCle.reponse) == 0)
+      {
+        printf("\nId : %d \nMot clé : %s \nReponse : %s \n", motCle.id, motCle.mot, motCle.reponse);
+        printf("\n---------------------\n");
+        compteur++;
+      }
+    }
+
+  if(compteur > 0)
+  {
+    printf("Mots clé trouvés en total : %d.", compteur);
+    printf("\n---------------------\n\n");
+  }
+  else
+  {
+    printf("\n---------------------\n");
+    printf("Aucun mot clé trouvé avec ce critere de recherche.");
+    printf("\n---------------------\n\n");
+  }
+
+  fclose(sourceBdd);
+
+  printf("Cliquer sur la touche 'e' pour revenir au menu de recherche. ");
+  do
+  {
+    scanf(" %c", &choix);
+  } while (choix != 'e');
+}
+
+void supprimerMotCle()
+{
+  system("clear");
+  char id[MAX_CHAR_SIZE] = "";
+  bool found = false;
+  char choix;
+
+  motcles motCle;
+
+  FILE *tmp_sourceBdd, *sourceBdd;
+  tmp_sourceBdd = fopen("temp_motcles.dat", "a");
+  sourceBdd = fopen("motcles.dat", "r");
+  if (tmp_sourceBdd == NULL && sourceBdd == NULL)
+  {
+    fprintf(stderr, "\nImpossible ouvrir la base de données temporaire (suppression coordonnee)!\n");
+    exit(0);
+  }
+  else
+  {
+    do
+    {
+      system("clear");
+      if (choix == 'n')
+      {
+        break;
+      }
+
+      if(checkIfDigit(id) == false)
+      {
+        printf("\nL'id que vous avez rentré n'est pas valide! Un id est compose uniquement de chiffres.\n");
+      }
+
+      printf("\nVeuillez rentrer l'id du mot clé à supprimer : ");
+      scanf(" %s", id);
+
+      if(checkIfDigit(id) == false)
+      {
+        continue;
+      }
+
+      while(fread(&motCle, sizeof(motcles), 1, sourceBdd))
+      {
+        if(atoi(id) == motCle.id)
+        {
+          found = true;
+        }
+      }
+
+      fclose(sourceBdd);
+      sourceBdd = fopen("motcles.dat", "r");
+
+      if(found == true)
+      {
+        while(fread(&motCle, sizeof(motcles), 1, sourceBdd))
+        {
+          if(atoi(id) != motCle.id)
+          {
+            fwrite(&motCle, sizeof(motcles), 1, tmp_sourceBdd);
+          }
+        }
+        fclose(sourceBdd);
+        remove("motcles.dat");
+        fclose(tmp_sourceBdd);
+        rename("temp_motcles.dat", "motcles.dat");
+
+        do
+        {
+          printf("\nSupprimé avec succès! Voulez-vous supprimer un autre mot clé? (o/n) ");
           scanf(" %c", &choix);
         } while (choix != 'o' && choix != 'n');
       }
