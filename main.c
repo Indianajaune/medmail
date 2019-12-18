@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX_CHAR_SIZE 500
+#define MAX_CHAR_SIZE 100
+#define MAX_CHAR_BODY 1000
 
 typedef struct{
   int id;
@@ -16,13 +17,13 @@ typedef struct{
 typedef struct{
   int id;
   char mot[MAX_CHAR_SIZE];
-  char reponse[MAX_CHAR_SIZE];
+  char reponse[MAX_CHAR_BODY];
 } motcles;
 
 typedef struct{
   coordonnees c;
   char obj[MAX_CHAR_SIZE];
-  char corps[MAX_CHAR_SIZE];
+  char corps[MAX_CHAR_BODY];
 } email;
 
 //Menu
@@ -74,8 +75,8 @@ void afficherMenu(char *mdp)
      printf("\nBienvenu dans le repondeur mail!\n\n");
      printf("1) Envoyer un mail.\n");
      printf("2) Passer à l'interface aministrateur.\n");
-     printf("3) Fermer l'application.\n\n");
-     printf("Veuillez choisir une option parmis celle proposée dans le menu ci-dessus : ");
+     printf("\n0) Fermer l'application.\n\n\n");
+     printf("Veuillez choisir une option parmis celles proposées dans le menu ci-dessus : ");
      scanf("%s", choix);
 
      if(checkIfDigit(choix) == false)
@@ -89,13 +90,13 @@ void afficherMenu(char *mdp)
               break;
          case 2: loginAdmin(tmp_ptr_mdp);
               break;
-         case 3: printf("Au revoir!\n");
+         case 0: printf("Au revoir!\n");
              exit(0);
              break;
          default: system("clear");
              break;
      }
-  } while (atoi(choix) != 3);
+  } while (atoi(choix) != 0);
 }
 
 void envoyerMail()
@@ -111,7 +112,7 @@ void loginAdmin(char *mdp)
   do
   {
       system("clear");
-      printf("\nVeuillez rentrer le mot de passe pour vous identifier à l'interface d'administration : ");
+      printf("\nVeuillez entrer le mot de passe pour vous identifier à l'interface d'administration : ");
       scanf("%s", inputMdp);
       if(strcmp(inputMdp, mdp) == 0)
       {
@@ -150,7 +151,7 @@ void afficherMenuAdmin(char *mdp)
       if(checkIfDigit(choix) == false)
       {
         system("clear");
-        printf("\nVous devez uniquement rentrer des chiffres entre 1 et 9 pour effectuer votre choix.\n");
+        printf("\nVous devez uniquement entrer des chiffres entre 1 et 9 pour effectuer votre choix.\n");
       }
 
        printf("\nBienvenu dans le repondeur mail (Menu Administrateur)!\n\n");
@@ -162,8 +163,8 @@ void afficherMenuAdmin(char *mdp)
        printf("6) Lister les mot clés et leur réponse associée.\n");
        printf("7) Rechercher un mot clé et sa réponse associée.\n");
        printf("8) Supprimer un mot clé et sa réponse associée.\n");
-       printf("9) Se deconnecter.\n\n");
-       printf("Veuillez choisir une option parmis celle proposée dans le menu ci-dessus : ");
+       printf("\n0) Se deconnecter.\n\n\n");
+       printf("Veuillez choisir une option parmis celles proposées dans le menu ci-dessus : ");
        scanf(" %s",choix);
 
        if(checkIfDigit(choix) == false)
@@ -189,12 +190,12 @@ void afficherMenuAdmin(char *mdp)
                break;
            case 8: supprimerMotCle(); afficherMenuAdmin(tmp_ptr_mdp);
                break;
-           case 9: system("clear"); afficherMenu(tmp_ptr_mdp);
+           case 0: system("clear"); afficherMenu(tmp_ptr_mdp);
                break;
            default: system("clear");
                break;
        }
-    } while (atoi(choix) != 9);
+    } while (atoi(choix) != 0);
 }
 
 int getLastId(char *fichier)
@@ -366,7 +367,7 @@ void rechercherCoordonnees()
      printf("2) Recherche par prenom.\n");
      printf("3) Rechercher par adresse mail.\n");
      printf("4) Rechercher par priorité.\n");
-     printf("5) Returner au menu principal.\n\n");
+     printf("\n0) Returner au menu administrateur.\n\n\n");
      printf("Veuillez choisir un parametre de recherche parmis ceux proposés ci-dessus : ");
      scanf(" %s", choix);
 
@@ -385,12 +386,12 @@ void rechercherCoordonnees()
              break;
          case 4: lancerRechercherCoordonnees(4); system("clear");
              break;
-         case 5: exit = true;
+         case 0: exit = true;
              break;
          default: system("clear");
              break;
      }
-  } while (atoi(choix) != 5);
+  } while (atoi(choix) != 0);
 }
 
 void lancerRechercherCoordonnees(int type)
@@ -411,21 +412,21 @@ void lancerRechercherCoordonnees(int type)
 
   if (type == 1)
   {
-    printf("\nVeuillez rentrer le nom : ");
+    printf("\nVeuillez entrer le nom : ");
     getchar();
     fgets(query, sizeof(query), stdin);
     removeNl(query);
   }
   else if (type == 2)
   {
-    printf("\nVeuillez rentrer le prenom : ");
+    printf("\nVeuillez entrer le prenom : ");
     getchar();
     fgets(query, sizeof(query), stdin);
     removeNl(query);
   }
   else if (type == 3)
   {
-    printf("\nVeuillez rentrer l'adresse : ");
+    printf("\nVeuillez entrer l'adresse : ");
     getchar();
     fgets(query, sizeof(query), stdin);
     removeNl(query);
@@ -434,7 +435,7 @@ void lancerRechercherCoordonnees(int type)
   {
     do
     {
-      printf("\nVeuillez rentrer le niveau d'importance (1 ou 0) : ");
+      printf("\nVeuillez entrer le niveau d'importance (1 ou 0) : ");
       scanf("%s", query);
     } while (strcmp(query, "1") != 0 && strcmp(query, "0") != 0);
   }
@@ -575,7 +576,7 @@ void supprimerCoordonnee()
       }
       else
       {
-        printf("\nL'id que vous avez rentré n'hexiste pas dans la base de donées des coordonnées!");
+        printf("\nL'id que vous avez rentré n'existe pas dans la base de donées des coordonnées!");
 
         do
         {
@@ -740,7 +741,7 @@ void supprimerMotCle()
   sourceBdd = fopen("motcles.dat", "r");
   if (tmp_sourceBdd == NULL && sourceBdd == NULL)
   {
-    fprintf(stderr, "\nImpossible ouvrir la base de données temporaire (suppression coordonnee)!\n");
+    fprintf(stderr, "\nImpossible d'ouvrir la base de données temporaire (suppression coordonnee)!\n");
     exit(0);
   }
   else
@@ -799,7 +800,7 @@ void supprimerMotCle()
       }
       else
       {
-        printf("\nL'id que vous avez rentré n'hexiste pas dans la base de donées des coordonnées!");
+        printf("\nL'id que vous avez rentré n'existe pas dans la base de donées des coordonnées!");
 
         do
         {
